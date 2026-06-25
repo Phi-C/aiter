@@ -876,7 +876,8 @@ namespace py = pybind11;
           py::arg("scaleA")      = std::nullopt,                                   \
           py::arg("scaleB")      = std::nullopt,                                   \
           py::arg("scaleOut")    = std::nullopt,                                   \
-          py::arg("bpreshuffle") = std::nullopt);                                  \
+          py::arg("bpreshuffle") = std::nullopt,                                   \
+          py::arg("use_gelu")    = std::nullopt);                                     \
     m.def("hipb_findallsols",                                                      \
           &hipb_findallsols,                                                       \
           "hipb_findallsols",                                                      \
@@ -887,7 +888,8 @@ namespace py = pybind11;
           py::arg("scaleA")      = std::nullopt,                                   \
           py::arg("scaleB")      = std::nullopt,                                   \
           py::arg("scaleC")      = std::nullopt,                                   \
-          py::arg("bpreshuffle") = false);                                         \
+          py::arg("bpreshuffle") = false,                                          \
+          py::arg("use_gelu")    = false);                                            \
     m.def("getHipblasltKernelName", &getHipblasltKernelName);
 
 #define LIBMHA_BWD_PYBIND                         \
@@ -1312,12 +1314,6 @@ namespace py = pybind11;
     m.def("moe_sum", &aiter::moe_sum, "moe_sum(Tensor! input, Tensor output) -> ()");
 
 #define MOE_TOPK_PYBIND                                      \
-    m.def("topk_sigmoid",                                    \
-          &aiter::topk_sigmoid,                              \
-          py::arg("topk_weights"),                           \
-          py::arg("topk_indices"),                           \
-          py::arg("gating_output"),                          \
-          "Apply topk sigmoid to the gating outputs.");      \
     m.def("topk_softplus",                                   \
           &aiter::topk_softplus,                             \
           py::arg("topk_weights"),                           \
@@ -1328,6 +1324,14 @@ namespace py = pybind11;
           py::arg("routed_scaling_factor") = 1.0,            \
           py::arg("score_func")            = "sqrtsoftplus", \
           "Fused topk gating: score_func='sqrtsoftplus'|'sigmoid'|'softmax'.");
+
+#define MOE_TOPK_CK_PYBIND                                   \
+    m.def("topk_sigmoid",                                    \
+          &aiter::topk_sigmoid,                              \
+          py::arg("topk_weights"),                           \
+          py::arg("topk_indices"),                           \
+          py::arg("gating_output"),                          \
+          "Apply topk sigmoid to the gating outputs.");
 
 #define MOE_SORTING_PYBIND                             \
     m.def("moe_sorting_fwd",                           \
@@ -1772,12 +1776,14 @@ namespace py = pybind11;
           py::arg("index_k_norm_weight"),                  \
           py::arg("num_index_heads"),                       \
           py::arg("slot_mapping"),                         \
-          py::arg("kv_cache"),                             \
+          py::arg("kv_cache_k"),                           \
+          py::arg("kv_cache_v"),                           \
           py::arg("index_cache"),                          \
           py::arg("block_size"),                           \
           py::arg("q_out"),                                \
           py::arg("index_q_out"),                          \
-          py::arg("index_slot_mapping"));                   \
+          py::arg("index_slot_mapping"),                   \
+          py::arg("asm_layout")    = false);                \
     m.def("fused_qknorm_idxrqknorm_fp8",     \
           &aiter::fused_qknorm_idxrqknorm_fp8, \
           py::arg("qkv"),                                  \
@@ -1793,7 +1799,8 @@ namespace py = pybind11;
           py::arg("index_k_norm_weight"),                  \
           py::arg("num_index_heads"),                       \
           py::arg("slot_mapping"),                         \
-          py::arg("kv_cache"),                             \
+          py::arg("kv_cache_k"),                           \
+          py::arg("kv_cache_v"),                           \
           py::arg("index_cache"),                          \
           py::arg("block_size"),                           \
           py::arg("q_out"),                                \
@@ -1801,7 +1808,8 @@ namespace py = pybind11;
           py::arg("index_slot_mapping"),                   \
           py::arg("kv_cache_dtype"),                       \
           py::arg("k_scale"),                              \
-          py::arg("v_scale"))
+          py::arg("v_scale"),                              \
+          py::arg("asm_layout")    = false)
 
 #define FUSED_QKNORM_ROPE_CACHE_QUANT_PYBIND                    \
     m.def("fused_qk_norm_rope_cache_quant_shuffle",             \
@@ -1975,7 +1983,8 @@ namespace py = pybind11;
           py::arg("scaleA")      = std::nullopt,                                   \
           py::arg("scaleB")      = std::nullopt,                                   \
           py::arg("scaleOut")    = std::nullopt,                                   \
-          py::arg("bpreshuffle") = std::nullopt);                                  \
+          py::arg("bpreshuffle") = std::nullopt,                                   \
+          py::arg("use_gelu")    = std::nullopt);                                     \
     m.def("hipb_findallsols",                                                      \
           &hipb_findallsols,                                                       \
           "hipb_findallsols",                                                      \
@@ -1986,7 +1995,8 @@ namespace py = pybind11;
           py::arg("scaleA")      = std::nullopt,                                   \
           py::arg("scaleB")      = std::nullopt,                                   \
           py::arg("scaleC")      = std::nullopt,                                   \
-          py::arg("bpreshuffle") = false);                                         \
+          py::arg("bpreshuffle") = false,                                          \
+          py::arg("use_gelu")    = false);                                            \
     m.def("getHipblasltKernelName", &getHipblasltKernelName);
 
 #define ROCSOLGEMM_PYBIND                                                          \
